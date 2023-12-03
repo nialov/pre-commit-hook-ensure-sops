@@ -32,7 +32,7 @@ def validate_enc(item):
     else:
         return False
 
-def check_file(filename):
+def check_file(filename, ignore_keys=()):
     """
     Check if a file has been encrypted properly with sops.
 
@@ -64,7 +64,7 @@ def check_file(filename):
 
     invalid_keys = []
     for k in doc:
-        if k != 'sops':
+        if k not in [*ignore_keys, 'sops']:
             # Values under the `sops` key are not encrypted.
             if not validate_enc(doc[k]):
                 # Collect all invalid keys so we can provide useful error message
@@ -78,13 +78,16 @@ def check_file(filename):
 def main():
     argparser = ArgumentParser()
     argparser.add_argument('filenames', nargs='+')
+    argparser.add_argument('-i', '--ignore-key', action='append', help='Ignore specific keys')
 
     args = argparser.parse_args()
 
     failed_messages = []
 
+    ignore_keys = args.ignore_key
+
     for f in args.filenames:
-        is_valid, message = check_file(f)
+        is_valid, message = check_file(f, ignore_keys=ignore_keys)
 
         if not is_valid:
             failed_messages.append(message)

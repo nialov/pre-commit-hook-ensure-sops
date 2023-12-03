@@ -6,3 +6,4 @@
   # or file path is encryped. Users of individual repos can exclude things
   # with `exclude` if necessary.
   files: .*secret.*
+  # args: ["-i", "key_to_ignore"]

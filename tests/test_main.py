@@ -41,19 +41,20 @@ this_is_not_valid_yaml
 
 
 @pytest.mark.parametrize(
-    "text,is_valid,extension",
+    "text,is_valid,extension,ignore_keys",
     [
-        pytest.param(INVALID_YAML_SECRET, False, "yaml", id="invalid_secret"),
-        pytest.param(VALID_YAML_SECRET, True, "yaml", id="valid_secret"),
-        pytest.param(NO_SOPS_METADATA_YAML, False, "yaml", id="no_sops_metadata"),
-        pytest.param(INVALID_YAML, False, "yaml", id="invalid_yaml"),
-        pytest.param(VALID_JSON_SECRET, True, "json", id="valid_json"),
+        pytest.param(INVALID_YAML_SECRET, False, "yaml",(), id="invalid_secret"),
+        pytest.param(INVALID_YAML_SECRET, True, "yaml",("foo",), id="invalid_secret_but_ignored_key"),
+        pytest.param(VALID_YAML_SECRET, True, "yaml",(), id="valid_secret"),
+        pytest.param(NO_SOPS_METADATA_YAML, False, "yaml",(), id="no_sops_metadata"),
+        pytest.param(INVALID_YAML, False, "yaml",(), id="invalid_yaml"),
+        pytest.param(VALID_JSON_SECRET, True, "json",(), id="valid_json"),
         pytest.param(
-            INVALID_JSON_SECRET, False, "json", id="valid_json_with_yaml_loader"
+            INVALID_JSON_SECRET, False, "json",(), id="valid_json_with_yaml_loader"
         ),
     ],
 )
-def test_check_file_validity_yaml(text, is_valid, extension, tmp_path: Path):
+def test_check_file_validity_yaml(text, is_valid, extension,ignore_keys, tmp_path: Path):
     """
     Test check_file.
 
@@ -63,5 +64,5 @@ def test_check_file_validity_yaml(text, is_valid, extension, tmp_path: Path):
     filepath = tmp_path / f"test.{extension}"
     filepath.write_text(text)
     filename = filepath.as_posix()
-    result = check_file(filename=filename)
+    result = check_file(filename=filename, ignore_keys=ignore_keys)
     assert result[0] == is_valid
